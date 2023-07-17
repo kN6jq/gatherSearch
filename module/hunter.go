@@ -62,7 +62,6 @@ func RunHunter(search string, filename string) {
 	hunterReq := hunterUrl + "?api-key=" + hunterKey + "&search=" + search + "&page=" + "1" + "&page_size=" + "1" + "&is_web=1" + "&start_time=" + start_time + "&end_time=" + end_time
 	client := req.C().R().
 		SetHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
-
 	response, err := client.SetSuccessResult(&testresults).Get(hunterReq)
 	if err != nil {
 		log.Println("Hunter API request failed")
@@ -76,10 +75,16 @@ func RunHunter(search string, filename string) {
 		log.Println("Da Niu, Token expired, please check")
 		return
 	}
+	if testresults.Code == 429 {
+		log.Println("Da Niu,your so Fast,wait 10s")
+		time.Sleep(time.Second * 10)
+		RunHunter(search, filename)
+		return
+	}
 	if response.IsSuccessState() {
 		dataTotal = testresults.Data.Total
 	}
-	time.Sleep(time.Second * 2)
+	log.Printf("共搜索到数据: %s 个", dataTotal)
 	// 计算总页数
 	if dataTotal > 0 {
 		pageSize := 10 // 每页处理 10 条数据
@@ -92,7 +97,7 @@ func RunHunter(search string, filename string) {
 		// 使用循环逐页处理数据
 		for pageIndex := 1; pageIndex <= totalPages; pageIndex++ {
 			var rows [][]string
-			time.Sleep(time.Second * 2)
+			time.Sleep(time.Second * 3)
 			hunterDataReq := hunterUrl + "?api-key=" + hunterKey + "&search=" + search + "&page=" + strconv.Itoa(pageIndex) + "&page_size=" + strconv.Itoa(pageSize) + "&is_web=1" + "&start_time=" + start_time + "&end_time=" + end_time
 			hunterResponse, err := client.SetSuccessResult(&dataresults).Get(hunterDataReq)
 			if err != nil {
@@ -123,7 +128,7 @@ func RunHunter(search string, filename string) {
 				rows = nil
 			}
 		}
-
+		time.Sleep(time.Second * 3)
 	}
 
 }

@@ -30,7 +30,6 @@ func RunFofa(search string, filename string) {
 	fofaReq := fofaurl + "?full=true&fields=domain,host,title,ip,port&full=false&page=1&size=1&email=" + fofaemail + "&key=" + fofatoken + "&qbase64=" + search
 	client := req.C()
 	response, err := client.R().SetSuccessResult(&results).Get(fofaReq)
-	time.Sleep(time.Second * 2)
 	if err != nil {
 		log.Println("fofa request error:", err)
 		return
@@ -51,7 +50,7 @@ func RunFofa(search string, filename string) {
 
 		// 使用循环逐页处理数据
 		for pageIndex := 1; pageIndex <= totalPages; pageIndex++ {
-			time.Sleep(time.Second * 2)
+			time.Sleep(time.Second * 3)
 			fofaDataReq := fofaurl + "?full=true&fields=domain,host,title,ip,port&full=false&page=" + strconv.Itoa(pageIndex) + "&size=" + strconv.Itoa(pageSize) + "&email=" + fofaemail + "&key=" + fofatoken + "&qbase64=" + search
 			fofaResponse, err := client.R().SetSuccessResult(&results).Get(fofaDataReq)
 			if err != nil {
@@ -93,6 +92,6 @@ func RunFofa(search string, filename string) {
 			}
 
 		}
-
+		time.Sleep(time.Second * 3)
 	}
 }
