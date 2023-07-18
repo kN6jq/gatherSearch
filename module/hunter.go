@@ -128,7 +128,7 @@ func RunHunter(search string, filename string) {
 				rows = nil
 			}
 		}
-		time.Sleep(time.Second * 3)
-	}
 
+	}
+	time.Sleep(time.Second * 3) // 有没有结果都要等待 3s 而不是有结果才延时
 }
