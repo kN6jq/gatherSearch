@@ -11,3 +11,7 @@ module:
   shodan:
     url: https://api.shodan.io/
     key: 111111111111111111111111111
+  zone:
+    url: https://0.zone/api/data/
+    key: 111111111111111111111111111
+    size: 10000

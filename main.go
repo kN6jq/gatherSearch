@@ -14,6 +14,7 @@ var (
 	domain    string // 域名
 	ip        string // ip
 	file      string // 文件
+	name      string
 	platform  string
 	customize bool
 )
@@ -22,7 +23,8 @@ func init() {
 	flag.StringVar(&domain, "d", "", "domain")
 	flag.StringVar(&ip, "i", "", "ip")
 	flag.StringVar(&file, "f", "", "file")
-	flag.StringVar(&platform, "p", "", "platform")
+	flag.StringVar(&name, "n", "", "0zone 对应的企业名字")
+	flag.StringVar(&platform, "p", "", "platform ( fofo | hunter | shodan | 0zone  )")
 	flag.BoolVar(&customize, "c", false, "customize")
 	flag.Parse()
 }
@@ -136,6 +138,18 @@ func main() {
 		if domain != "" {
 			log.Println("正在搜索domain: ", domain)
 			module.RunShodan(domain, shodanExcelFile)
+		} else {
+			flag.Usage()
+		}
+	} else if strings.Contains(platform, "0zone") {
+		if config.Module.Zone.URL == "" || config.Module.Zone.Key == "" {
+			log.Println("0zone配置文件错误, 请检查配置文件")
+			return
+		}
+		zoneExcelFile := utils.ZoneExcelFile()
+		if name != "" {
+			log.Println("正在搜索企业: ", name)
+			module.RunZone(name, zoneExcelFile)
 		} else {
 			flag.Usage()
 		}

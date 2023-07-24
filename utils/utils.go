@@ -45,6 +45,14 @@ func ReadFileLines(filename string) ([]string, error) {
 	return lines, nil
 }
 
+func RemoveSpaces(input string) string {
+	t1 := strings.ReplaceAll(input, " ", "")
+	t2 := strings.ReplaceAll(t1, "\n", "")
+	t3 := strings.ReplaceAll(t2, "\t", "")
+	t4 := strings.ReplaceAll(t3, "｜", "|")
+	return t4
+}
+
 func HunterExcelFile() string {
 	headerRow := []string{"Domain", "URL", "WebTitle", "StatusCode", "IP", "Port"}
 	filename, err := CreateExcelFile("hunter", headerRow)
@@ -64,6 +72,15 @@ func FofaExcelFile() string {
 func ShodanExcelFile() string {
 	headerRow := []string{"Domain", "Subdomain", "Ip"}
 	filename, err := CreateExcelFile("shodan", headerRow)
+	if err != nil {
+		log.Fatalln("创建文件时发生错误:", err)
+	}
+	return filename
+}
+
+func ZoneExcelFile() string {
+	headerRow := []string{"Url", "title", "状态码", "IP", "端口"}
+	filename, err := CreateExcelFile("zone", headerRow)
 	if err != nil {
 		log.Fatalln("创建文件时发生错误:", err)
 	}
