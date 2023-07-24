@@ -3,7 +3,6 @@ package module
 import (
 	"fmt"
 	"gatherSearch/utils"
-	"github.com/imroc/req/v3"
 	"log"
 	"strconv"
 	"time"
@@ -86,7 +85,7 @@ type Data struct {
 	Url_analyzer         interface{}       `json:"url_analyzer"`
 }
 
-type AutoData struct {
+type SiteData struct {
 	Code     int    `json:"code"`
 	Message  string `json:"message"`
 	Sort     string `json:"sort"`
@@ -96,23 +95,53 @@ type AutoData struct {
 	Data     []Data `json:"data"`
 }
 
-func RunZone(search string, filename string) {
+type Msg struct {
+	Ip string `json:"ip"`
+}
+
+type Datas struct {
+	_id          string      `json:"_id"`
+	Msg          Msg         `json:"msg"`
+	Toplv_domain string      `json:"toplv_domain"`
+	Icp          string      `json:"icp"`
+	Domain       string      `json:"domain"`
+	Company      interface{} `json:"company"`
+	Url          string      `json:"url"`
+}
+
+type DomainData struct {
+	Code     int     `json:"code"`
+	Message  string  `json:"message"`
+	Sort     string  `json:"sort"`
+	Page     int     `json:"page"`
+	Pagesize int     `json:"pagesize"`
+	Total    string  `json:"total"`
+	Data     []Datas `json:"data"`
+}
+
+func RunZoneSite(search string, filename string) {
 	searchSite(search, filename)
+
+}
+
+func RunZoneDomain(search string, filename string) {
+	searchDomain(search, filename)
 }
 
 func searchSite(search string, filename string) {
-	var result AutoData
+
+	var result SiteData
 	config := utils.GetConfig()
 	url := config.Module.Zone.URL
 	key := config.Module.Zone.Key
-	response, err := req.C().R().SetHeader("Content-Type", "application/json").
-		SetBody(fmt.Sprintf(`{"query":"%s", "query_type":"site", "page":1, "pagesize":10, "zone_key_id": "%s"}`, search, key)).
+	response, err := utils.Req().SetHeader("Content-Type", "application/json").
+		SetBody(fmt.Sprintf(`{"query":"%s", "query_type":"site", "page":1, "pagesize":1, "zone_key_id": "%s"}`, search, key)).
 		SetSuccessResult(&result).Post(url)
 	if err != nil {
 		log.Println("0.zone request error:", err)
 	}
 	var Total = 0
-	if response.IsSuccess() {
+	if response.IsSuccessState() {
 		Total, _ = strconv.Atoi(result.Total)
 	} else {
 		log.Println("暂未发现信息系统")
@@ -126,7 +155,7 @@ func searchSite(search string, filename string) {
 		totalPages := (Total + pageSize - 1) / pageSize
 		for pageIndex := 1; pageIndex <= totalPages; pageIndex++ {
 			var rows [][]string
-			response, err := req.C().R().SetHeader("Content-Type", "application/json").
+			response, err := utils.Req().SetHeader("Content-Type", "application/json").
 				SetBody(fmt.Sprintf(`{"query":"%s", "query_type":"site", "page":%d, "pagesize":%d, "zone_key_id":"%s"}`, search, pageIndex, pageSize, key)).
 				SetSuccessResult(&result).Post(url)
 			if err != nil {
@@ -153,5 +182,60 @@ func searchSite(search string, filename string) {
 			time.Sleep(time.Second * 2)
 		}
 	}
+	time.Sleep(time.Second * 2)
+}
+
+func searchDomain(search string, filename string) {
+	var result DomainData
+	config := utils.GetConfig()
+	url := config.Module.Zone.URL
+	key := config.Module.Zone.Key
+	response, err := utils.Req().SetHeader("Content-Type", "application/json").
+		SetBody(fmt.Sprintf(`{"query":"%s", "query_type":"domain", "page":1, "pagesize":1, "zone_key_id": "%s"}`, search, key)).
+		SetSuccessResult(&result).Post(url)
+	if err != nil {
+		log.Println("0.zone request error:", err)
+	}
+	var Total = 0
+	if response.IsSuccessState() {
+		Total, _ = strconv.Atoi(result.Total)
+	} else {
+		log.Println("暂未发现信息系统")
+	}
+	time.Sleep(time.Second * 2)
+	if Total > 0 {
+		if Total > 10000 {
+			Total = 10000
+		}
+		pageSize := 40 // 每页处理 40 条数据
+		totalPages := (Total + pageSize - 1) / pageSize
+
+		for pageIndex := 1; pageIndex <= totalPages; pageIndex++ {
+			var rows [][]string
+			response, err := utils.Req().SetHeader("Content-Type", "application/json").
+				SetBody(fmt.Sprintf(`{"query":"%s", "query_type":"domain", "page":%d, "pagesize":%d, "zone_key_id":"%s"}`, search, pageIndex, pageSize, key)).
+				SetSuccessResult(&result).Post(url)
+			if err != nil {
+				log.Println("0.zone request error:", err)
+			}
+			if response.IsSuccessState() {
+				for _, v := range result.Data {
+					url := v.Url
+					ip := v.Msg.Ip
+					rows = append(rows, []string{url, ip})
+					fmt.Printf("%-20s %-30s\n", url, ip)
+				}
+			}
+			if len(rows) > 0 {
+				err := utils.WriteDataToExcel(filename, rows)
+				if err != nil {
+					log.Println("写入excel失败:", err)
+				}
+				rows = nil
+			}
+			time.Sleep(time.Second * 2)
+		}
+	}
+
 	time.Sleep(time.Second * 2)
 }

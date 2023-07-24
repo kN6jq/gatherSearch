@@ -3,7 +3,6 @@ package module
 import (
 	"fmt"
 	"gatherSearch/utils"
-	"github.com/imroc/req/v3"
 	"log"
 	"strconv"
 	"time"
@@ -28,8 +27,7 @@ func RunFofa(search string, filename string) {
 	fofaemail := config.Module.Fofa.Email
 	fofatoken := config.Module.Fofa.Token
 	fofaReq := fofaurl + "?full=true&fields=domain,host,title,ip,port&full=false&page=1&size=1&email=" + fofaemail + "&key=" + fofatoken + "&qbase64=" + search
-	client := req.C()
-	response, err := client.R().SetSuccessResult(&results).Get(fofaReq)
+	response, err := utils.Req().SetSuccessResult(&results).Get(fofaReq)
 	if err != nil {
 		log.Println("fofa request error:", err)
 		return
@@ -52,7 +50,7 @@ func RunFofa(search string, filename string) {
 		for pageIndex := 1; pageIndex <= totalPages; pageIndex++ {
 			time.Sleep(time.Second * 3)
 			fofaDataReq := fofaurl + "?full=true&fields=domain,host,title,ip,port&full=false&page=" + strconv.Itoa(pageIndex) + "&size=" + strconv.Itoa(pageSize) + "&email=" + fofaemail + "&key=" + fofatoken + "&qbase64=" + search
-			fofaResponse, err := client.R().SetSuccessResult(&results).Get(fofaDataReq)
+			fofaResponse, err := utils.Req().SetSuccessResult(&results).Get(fofaDataReq)
 			if err != nil {
 				log.Println("Fofa API request failed")
 				return

@@ -146,12 +146,14 @@ func main() {
 			log.Println("0zone配置文件错误, 请检查配置文件")
 			return
 		}
-		zoneExcelFile := utils.ZoneExcelFile()
+		zoneSiteExcelFile := utils.ZoneSiteExcelFile()
+		zoneDomainExcelFile := utils.ZoneDomainExcelFile()
 		if name != "" {
 			log.Println("正在搜索企业: ", name)
-			module.RunZone(name, zoneExcelFile)
-		} else {
-			flag.Usage()
+			module.RunZoneSite(name, zoneSiteExcelFile)
+		} else if domain != "" {
+			log.Println("正在搜索domain: ", domain)
+			module.RunZoneDomain(domain, zoneDomainExcelFile)
 		}
 	}
 

@@ -3,7 +3,6 @@ package module
 import (
 	"fmt"
 	"gatherSearch/utils"
-	"github.com/imroc/req/v3"
 	"log"
 )
 
@@ -30,8 +29,7 @@ func RunShodan(search string, filename string) {
 	shodanUrl := config.Module.Shodan.URL
 	shodanKey := config.Module.Shodan.Key
 	shodanReq := shodanUrl + "/dns/domain/" + search + "?key=" + shodanKey
-	client := req.C().DevMode()
-	response, err := client.R().SetSuccessResult(&results).Get(shodanReq)
+	response, err := utils.Req().SetSuccessResult(&results).Get(shodanReq)
 	if err != nil {
 		log.Println("shodan request error:", err)
 		return

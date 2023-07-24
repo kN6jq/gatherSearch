@@ -36,6 +36,7 @@ gatherSearch -p shodan -d baidu.com # 搜索域名
 
 ```bash
 gatherSearch -p 0zone -n 零零信安 # 搜索单位信息系统
+gatherSearch -p 0zone -d baidu.com # 搜索域名(这里咨询了客服,需要提供域名进行查询)
 ```
 
 ## 注意事项

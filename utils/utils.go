@@ -3,13 +3,33 @@ package utils
 import (
 	"bufio"
 	"fmt"
+	"github.com/imroc/req/v3"
 	"github.com/tealeg/xlsx"
 	"log"
+	"math/rand"
 	"net"
 	"os"
 	"strings"
 	"time"
 )
+
+func Req() *req.Request {
+	return req.C().R().SetHeader("User-Agent", RandomUserAgent())
+}
+
+func RandomUserAgent() string {
+	userAgents := []string{
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
+		"Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko",
+		"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 Edge/16.16299",
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:58.0) Gecko/20100101 Firefox/58.0",
+		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/604.5.6 (KHTML, like Gecko) Version/11.0.3 Safari/604.5.6",
+	}
+
+	rand.Seed(time.Now().UnixNano())
+	randomIndex := rand.Intn(len(userAgents))
+	return userAgents[randomIndex]
+}
 
 func FileExists(filename string) bool {
 	_, err := os.Stat(filename)
@@ -78,9 +98,18 @@ func ShodanExcelFile() string {
 	return filename
 }
 
-func ZoneExcelFile() string {
+func ZoneSiteExcelFile() string {
 	headerRow := []string{"Url", "title", "状态码", "IP", "端口"}
 	filename, err := CreateExcelFile("zone", headerRow)
+	if err != nil {
+		log.Fatalln("创建文件时发生错误:", err)
+	}
+	return filename
+}
+
+func ZoneDomainExcelFile() string {
+	headerRow := []string{"domain", "ip"}
+	filename, err := CreateExcelFile("domain", headerRow)
 	if err != nil {
 		log.Fatalln("创建文件时发生错误:", err)
 	}

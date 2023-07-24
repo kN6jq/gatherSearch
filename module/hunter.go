@@ -3,7 +3,6 @@ package module
 import (
 	"fmt"
 	"gatherSearch/utils"
-	"github.com/imroc/req/v3"
 	"log"
 	"strconv"
 	"time"
@@ -60,7 +59,7 @@ func RunHunter(search string, filename string) {
 	end_time := utils.GetNowDate()
 	// 先获取一条数据，获取总数
 	hunterReq := hunterUrl + "?api-key=" + hunterKey + "&search=" + search + "&page=" + "1" + "&page_size=" + "1" + "&is_web=1&port_filter=true" + "&start_time=" + start_time + "&end_time=" + end_time
-	client := req.C().R().
+	client := utils.Req().
 		SetHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
 	response, err := client.SetSuccessResult(&testresults).Get(hunterReq)
 	if err != nil {
@@ -99,7 +98,7 @@ func RunHunter(search string, filename string) {
 			var rows [][]string
 			time.Sleep(time.Second * 3)
 			hunterDataReq := hunterUrl + "?api-key=" + hunterKey + "&search=" + search + "&page=" + strconv.Itoa(pageIndex) + "&page_size=" + strconv.Itoa(pageSize) + "&is_web=1&port_filter=true" + "&start_time=" + start_time + "&end_time=" + end_time
-			hunterResponse, err := client.SetSuccessResult(&dataresults).Get(hunterDataReq)
+			hunterResponse, err := utils.Req().SetSuccessResult(&dataresults).Get(hunterDataReq)
 			if err != nil {
 				log.Println("Hunter API request failed")
 				return
