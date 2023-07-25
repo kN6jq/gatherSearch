@@ -24,7 +24,7 @@ func init() {
 	flag.StringVar(&ip, "i", "", "ip")
 	flag.StringVar(&file, "f", "", "file")
 	flag.StringVar(&name, "n", "", "0zone 对应的企业名字")
-	flag.StringVar(&platform, "p", "", "platform ( fofo | hunter | shodan | 0zone  )")
+	flag.StringVar(&platform, "p", "", "platform ( fofo | hunter | shodan | shodandb | 0zone  )")
 	flag.BoolVar(&customize, "c", false, "customize")
 	flag.Parse()
 }
@@ -32,7 +32,7 @@ func init() {
 func main() {
 	config := utils.GetConfig()
 
-	if strings.Contains(platform, "fofa") {
+	if platform == "fofa" {
 		// 先判断是否做了fofa的参数配置
 		if config.Module.Fofa.Email == "" || config.Module.Fofa.Token == "" || config.Module.Fofa.URL == "" {
 			fmt.Println("fofa config error")
@@ -78,7 +78,7 @@ func main() {
 		} else {
 			flag.Usage()
 		}
-	} else if strings.Contains(platform, "hunter") {
+	} else if platform == "hunter" {
 		// 先判断是否做了hunter的参数配置
 		if config.Module.Hunter.Key == "" || config.Module.Hunter.URL == "" {
 			log.Println("hunter配置文件错误, 请检查配置文件")
@@ -128,7 +128,7 @@ func main() {
 		} else {
 			flag.Usage()
 		}
-	} else if strings.Contains(platform, "shodan") {
+	} else if platform == "shodan" {
 		// 先判断是否做了shodan的参数配置
 		if config.Module.Shodan.Key == "" || config.Module.Shodan.URL == "" {
 			log.Println("shodan配置文件错误, 请检查配置文件")
@@ -140,6 +140,33 @@ func main() {
 			module.RunShodan(domain, shodanExcelFile)
 		} else {
 			flag.Usage()
+		}
+	} else if platform == "shodandb" {
+		shodandbExcelFile := utils.ShodanPortExcelFile()
+		if ip != "" {
+			ipList := []string{}
+			if strings.Contains(ip, "/") {
+				ipList, _ = utils.GenerateIPList(ip)
+
+			} else {
+				ipList = append(ipList, ip)
+			}
+			for _, ips := range ipList {
+				log.Println("正在搜索ip: ", ips)
+				module.RunShodandb(ips, shodandbExcelFile)
+			}
+
+		} else if file != "" {
+			lines, err := utils.ReadFileLines(file)
+			if err != nil {
+				log.Println("read file error:", err)
+			}
+			for _, line := range lines {
+				log.Println("正在搜索ip: ", line)
+				module.RunShodandb(line, shodandbExcelFile)
+			}
+		} else {
+			log.Println("shodandb 搜索参数错误, 请检查参数")
 		}
 	} else if strings.Contains(platform, "0zone") {
 		if config.Module.Zone.URL == "" || config.Module.Zone.Key == "" {

@@ -17,6 +17,32 @@ func Req() *req.Request {
 	return req.C().R().SetHeader("User-Agent", RandomUserAgent())
 }
 
+func GenerateIPList(ipSegment string) ([]string, error) {
+	// 解析IP段
+	ip, ipNet, err := net.ParseCIDR(ipSegment)
+	if err != nil {
+		return nil, err
+	}
+
+	// 递增IP地址函数
+	incIP := func(ip net.IP) {
+		for j := len(ip) - 1; j >= 0; j-- {
+			ip[j]++
+			if ip[j] > 0 {
+				break
+			}
+		}
+	}
+
+	// 计算IP地址范围
+	var ipList []string
+	for ip := ip.Mask(ipNet.Mask); ipNet.Contains(ip); incIP(ip) {
+		ipList = append(ipList, ip.String())
+	}
+
+	return ipList, nil
+}
+
 func RandomUserAgent() string {
 	userAgents := []string{
 		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
@@ -97,7 +123,14 @@ func ShodanExcelFile() string {
 	}
 	return filename
 }
-
+func ShodanPortExcelFile() string {
+	headerRow := []string{"port"}
+	filename, err := CreateExcelFile("shodandb", headerRow)
+	if err != nil {
+		log.Fatalln("创建文件时发生错误:", err)
+	}
+	return filename
+}
 func ZoneSiteExcelFile() string {
 	headerRow := []string{"Url", "title", "状态码", "IP", "端口"}
 	filename, err := CreateExcelFile("zone", headerRow)

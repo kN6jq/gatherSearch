@@ -32,6 +32,16 @@ gatherSearch -p shodan -d baidu.com # 搜索域名
 ```
 
 
+### shodandb
+
+```bash
+gatherSearch -p shodandb -i 1.1.1.1 # 搜索ip
+gatherSearch -p shodandb -i 1.1.1.1/24 # 搜索ip c段
+gatherSearch -p shodandb -f 1.txt # 从文件中读取ip
+gatherSearch -p shodandb -i 1.1.1.1/24 | httpx --title --status-code # 结合httpx进行扫描
+
+```
+
 ### 0zone
 
 ```bash
