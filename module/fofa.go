@@ -3,7 +3,7 @@ package module
 import (
 	"encoding/base64"
 	"fmt"
-	"gatherSearch/utils"
+	"github.com/kN6jq/gatherSearch/utils"
 	"log"
 	"strconv"
 	"time"

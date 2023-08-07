@@ -2,7 +2,7 @@ package module
 
 import (
 	"fmt"
-	"gatherSearch/utils"
+	"github.com/kN6jq/gatherSearch/utils"
 	"log"
 )
 
