@@ -1,55 +1,66 @@
 # gatherSearch
 
-集成fofa,hunter,shodan,0zone搜索引擎的信息收集工具,带有自动保存xlsx文件功能
+集成fofa,hunter,shodan,0zone等搜索引擎的信息收集工具,带有自动保存xlsx文件功能
 
+持续更新中...
 
-## 使⽤方法
+# 使⽤方法
 
 > 举例如下,日后有空还会新增其他搜索引擎,方便后续加入我的信息收集系统
 
-### fofa
+## fofa
 
+> 对查询文件中的ip搜索进行了优化(仅支持fofa),使用`||`进行连接,可在配置文件中设置连接个数,默认为10个
 ```bash
-gatherSearch -p fofa -d baidu.com # 搜索域名
-gatherSearch -p fofa -i 1.1.1.1 # 搜索ip
-gatherSearch -p fofa -f 1.txt # 从文件中读取域名或ip
-gatherSearch -p fofa -f 1.txt -c # 从文件中读取自定义的搜索语句
+gatherSearch fofa -d baidu.com # 搜索域名
+gatherSearch fofa -i 1.1.1.1 # 搜索ip
+gatherSearch fofa -f 1.txt # 从文件中读取域名或ip
+gatherSearch fofa -f 1.txt -c # 从文件中读取自定义的搜索语句
 ```
 
-### hunter
+## hunter
 
 ```bash
-gatherSearch -p hunter -d baidu.com # 搜索域名
-gatherSearch -p hunter -i 1.1.1.1 # 搜索ip
-gatherSearch -p hunter -f 1.txt # 从文件中读取域名或ip
-gatherSearch -p hunter -f 1.txt -c # 从文件中读取自定义的搜索语句
+gatherSearch hunter -d baidu.com # 搜索域名
+gatherSearch hunter -i 1.1.1.1 # 搜索ip
+gatherSearch hunter -f 1.txt # 从文件中读取域名或ip
+gatherSearch hunter -f 1.txt -c # 从文件中读取自定义的搜索语句
 ```
 
-### shodan
+## shodan
 
 ```bash
-gatherSearch -p shodan -d baidu.com # 搜索域名
+gatherSearch shodan -d baidu.com # 搜索域名
 ```
 
 
-### shodandb
+## shodandb
 
 ```bash
-gatherSearch -p shodandb -i 1.1.1.1 # 搜索ip
-gatherSearch -p shodandb -i 1.1.1.1/24 # 搜索ip c段
-gatherSearch -p shodandb -f 1.txt # 从文件中读取ip
-gatherSearch -p shodandb -i 1.1.1.1/24 | httpx --title --status-code # 结合httpx进行扫描
+gatherSearch shodandb -i 1.1.1.1 # 搜索ip
+gatherSearch shodandb -i 1.1.1.1/24 # 搜索ip c段
+gatherSearch shodandb -f 1.txt # 从文件中读取ip
+gatherSearch shodandb -i 1.1.1.1/24 | httpx --title --status-code # 结合httpx进行扫描
 
 ```
 
-### 0zone
+## 0zone
 
 ```bash
-gatherSearch -p 0zone -n 零零信安 # 搜索单位信息系统
-gatherSearch -p 0zone -d baidu.com # 搜索域名(这里咨询了客服,需要提供域名进行查询)
+gatherSearch 0zone -n 零零信安 # 搜索单位信息系统
+gatherSearch 0zone -d baidu.com # 搜索域名(这里咨询了客服,需要提供域名进行查询)
 ```
 
-## 注意事项
+# 注意事项
 
 - 使用前请在config.yaml配置api
 - 当超过搜索引擎设置的最大结果时,使用配置文件最大搜索数量
+
+
+# 免责申明
+
+本项目仅面向安全研究与学习，禁止任何非法用途
+
+如您在使用本项目的过程中存在任何非法行为，您需自行承担相应后果
+
+除非您已充分阅读、完全理解并接受本协议，否则，请您不要使用本项目

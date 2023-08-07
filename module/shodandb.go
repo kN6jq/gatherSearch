@@ -16,15 +16,18 @@ type ShodandbData struct {
 	Vulns     []string      `json:"vulns"`
 }
 
-func RunShodandb(search string, filename string) {
-	url := "https://internetdb.shodan.io/" + search
-	var results ShodandbData
-	response, _ := utils.Req().SetSuccessResult(&results).Get(url)
+var (
+	shodandbResults ShodandbData
+)
+
+func RunShodandb(data string, filename string) {
+	url := "https://internetdb.shodan.io/" + data
+	response, _ := utils.Req().SetSuccessResult(&shodandbResults).Get(url)
 	if response.IsSuccessState() {
 		var rows [][]string
-		for i := range results.Ports {
-			ip := results.Ip
-			port := strconv.Itoa(results.Ports[i])
+		for i := range shodandbResults.Ports {
+			ip := shodandbResults.Ip
+			port := strconv.Itoa(shodandbResults.Ports[i])
 			rows = append(rows, []string{ip + ":" + port})
 			fmt.Printf("%s:%s\n", ip, port)
 		}

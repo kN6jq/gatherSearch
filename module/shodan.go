@@ -23,29 +23,32 @@ type DataItem struct {
 	LastSeen  string   `json:"last_seen"`
 }
 
-func RunShodan(search string, filename string) {
-	var results shodanResponse
+var (
+	shodanResults shodanResponse
+)
+
+func RunShodan(data string, filename string) {
 	config := utils.GetConfig()
 	shodanUrl := config.Module.Shodan.URL
 	shodanKey := config.Module.Shodan.Key
-	shodanReq := shodanUrl + "/dns/domain/" + search + "?key=" + shodanKey
-	response, err := utils.Req().SetSuccessResult(&results).Get(shodanReq)
+	shodanReq := shodanUrl + "/dns/domain/" + data + "?key=" + shodanKey
+	response, err := utils.Req().SetSuccessResult(&shodanResults).Get(shodanReq)
 	if err != nil {
 		log.Println("shodan request error:", err)
 		return
 	}
 	if response.IsSuccessState() {
 		var rows [][]string
-		for i := range results.Data {
+		for i := range shodanResults.Data {
 			subdomain := ""
-			if results.Data[i].Subdomain == "" {
-				subdomain = "*." + search
+			if shodanResults.Data[i].Subdomain == "" {
+				subdomain = "*." + data
 			} else {
-				subdomain = results.Data[i].Subdomain + "." + search
+				subdomain = shodanResults.Data[i].Subdomain + "." + data
 			}
-			ip := results.Data[i].Value
-			rows = append(rows, []string{search, subdomain, ip})
-			fmt.Printf("%-20s %-20s %-20s \n", search, subdomain, ip)
+			ip := shodanResults.Data[i].Value
+			rows = append(rows, []string{data, subdomain, ip})
+			fmt.Printf("%-20s %-20s %-20s \n", data, subdomain, ip)
 		}
 		if len(rows) > 0 {
 			// 保存数据到 Excel 文件

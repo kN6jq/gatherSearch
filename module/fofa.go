@@ -1,6 +1,7 @@
 package module
 
 import (
+	"encoding/base64"
 	"fmt"
 	"gatherSearch/utils"
 	"log"
@@ -19,38 +20,43 @@ type fofaResponse struct {
 	Results         []interface{} `yaml:"results"`
 }
 
-func RunFofa(search string, filename string) {
-	var results fofaResponse
-	var dataTotal int
+var (
+	fofaResults   fofaResponse
+	fofadataTotal int
+)
+
+func FofaSearch(data string, filename string) {
+	search := base64.URLEncoding.EncodeToString([]byte(data))
 	config := utils.GetConfig()
 	fofaurl := config.Module.Fofa.URL
 	fofaemail := config.Module.Fofa.Email
 	fofatoken := config.Module.Fofa.Token
 	fofaReq := fofaurl + "?full=true&fields=domain,host,title,ip,port&full=false&page=1&size=1&email=" + fofaemail + "&key=" + fofatoken + "&qbase64=" + search
-	response, err := utils.Req().SetSuccessResult(&results).Get(fofaReq)
+	response, err := utils.Req().SetSuccessResult(&fofaResults).Get(fofaReq)
 	if err != nil {
 		log.Println("fofa request error:", err)
 		return
 	}
 	if response.IsSuccessState() {
-		dataTotal = results.Size
+		fofadataTotal = fofaResults.Size
 	} else {
 		log.Println("fofa request error:", err)
 		return
 	}
-	if dataTotal > 0 {
+	log.Printf("共搜索到数据: %d 个", fofadataTotal)
+	if fofadataTotal > 0 {
 		pageSize := 100 // 每页处理 100 条数据
-		if dataTotal > 3000 {
-			dataTotal = utils.Config.Module.Fofa.Size
+		if fofadataTotal > 3000 {
+			fofadataTotal = utils.Config.Module.Fofa.Size
 		}
 		// 计算总页数
-		totalPages := (dataTotal + pageSize - 1) / pageSize
+		totalPages := (fofadataTotal + pageSize - 1) / pageSize
 
 		// 使用循环逐页处理数据
 		for pageIndex := 1; pageIndex <= totalPages; pageIndex++ {
 			time.Sleep(time.Second * 3)
 			fofaDataReq := fofaurl + "?full=true&fields=domain,host,title,ip,port&full=false&page=" + strconv.Itoa(pageIndex) + "&size=" + strconv.Itoa(pageSize) + "&email=" + fofaemail + "&key=" + fofatoken + "&qbase64=" + search
-			fofaResponse, err := utils.Req().SetSuccessResult(&results).Get(fofaDataReq)
+			fofaResponse, err := utils.Req().SetSuccessResult(&fofaResults).Get(fofaDataReq)
 			if err != nil {
 				log.Println("Fofa API request failed")
 				return
@@ -59,7 +65,7 @@ func RunFofa(search string, filename string) {
 			if fofaResponse.IsSuccessState() {
 				var rows [][]string
 				// 循环输出 results 列表
-				for _, item := range results.Results {
+				for _, item := range fofaResults.Results {
 					result, ok := item.([]interface{})
 					if !ok {
 						log.Println("无效的结果项")

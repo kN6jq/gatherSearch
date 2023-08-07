@@ -17,6 +17,34 @@ func Req() *req.Request {
 	return req.C().R().SetHeader("User-Agent", RandomUserAgent())
 }
 
+func SplitAndFormatSlice(list []string, batchSize int) []string {
+	totalLength := len(list)
+	segments := (totalLength + batchSize - 1) / batchSize
+
+	searchData := make([]string, 0)
+
+	for i := 0; i < segments; i++ {
+		result := ""
+		startIndex := i * batchSize
+		endIndex := (i + 1) * batchSize
+		if endIndex > totalLength {
+			endIndex = totalLength
+		}
+		segment := list[startIndex:endIndex]
+		for index, idata := range segment {
+
+			data := fmt.Sprintf("%s", idata)
+			if index < len(segment)-1 {
+				data += " || "
+			}
+			result += data
+		}
+		searchData = append(searchData, result)
+	}
+
+	return searchData
+}
+
 func GenerateIPList(ipSegment string) ([]string, error) {
 	// 解析IP段
 	ip, ipNet, err := net.ParseCIDR(ipSegment)
