@@ -22,6 +22,9 @@ gatherSearch fofa -f 1.txt -c # 从文件中读取自定义的搜索语句
 
 ## hunter
 
+> tips: 如果查询文件内的为ip,为了快速,通过配置文件中的batchSize设置数量为一组拼接进行查询
+> tips: hunter最大支持5个拼接,同时请注意api积分!!!
+
 ```bash
 gatherSearch hunter -d baidu.com # 搜索域名
 gatherSearch hunter -i 1.1.1.1 # 搜索ip

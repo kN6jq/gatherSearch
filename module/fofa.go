@@ -25,7 +25,7 @@ var (
 	fofadataTotal int
 )
 
-func FofaSearch(data string, filename string) {
+func RunFofa(data string, filename string) {
 	search := base64.URLEncoding.EncodeToString([]byte(data))
 	config := utils.GetConfig()
 	fofaurl := config.Module.Fofa.URL

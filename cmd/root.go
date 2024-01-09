@@ -66,11 +66,11 @@ var fofaCmd = &cobra.Command{
 		if fofa.Domain != "" {
 			log.Println("正在搜索domain: ", fofa.Domain)
 			searchData := fmt.Sprintf(`domain="%s"`, fofa.Domain)
-			module.FofaSearch(searchData, fofaExcelFile)
+			module.RunFofa(searchData, fofaExcelFile)
 		} else if fofa.Ip != "" {
 			log.Println("正在搜索ip: ", fofa.Ip)
 			searchData := fmt.Sprintf(`ip="%s"`, fofa.Ip)
-			module.FofaSearch(searchData, fofaExcelFile)
+			module.RunFofa(searchData, fofaExcelFile)
 		} else if fofa.File != "" {
 			lines, err := utils.ReadFileLines(fofa.File)
 			if err != nil {
@@ -80,7 +80,7 @@ var fofaCmd = &cobra.Command{
 				log.Println("使用自定义搜索语法,请确保文件中每行都是搜索语法")
 				for _, line := range lines {
 					log.Println("自定义语句查询: ", line)
-					module.FofaSearch(line, fofaExcelFile)
+					module.RunFofa(line, fofaExcelFile)
 				}
 			} else {
 				// 如果一个文件内都是ip,那么将ip拼接为指定个数进行查询，快
@@ -95,13 +95,13 @@ var fofaCmd = &cobra.Command{
 				searchData := utils.SplitAndFormatSlice(allData, config.Module.Fofa.BatchSize)
 				for _, datum := range searchData {
 					log.Println("正在搜索: ", datum)
-					module.FofaSearch(datum, fofaExcelFile)
+					module.RunFofa(datum, fofaExcelFile)
 				}
 
 				for _, line := range lines {
 					if !utils.IsIP(line) {
 						searchData := fmt.Sprintf(`domain="%s"`, line)
-						module.FofaSearch(searchData, fofaExcelFile)
+						module.RunFofa(searchData, fofaExcelFile)
 					}
 				}
 
@@ -142,17 +142,28 @@ var hunterCmd = &cobra.Command{
 					module.RunHunter(line, hunterExcelFile)
 				}
 			} else {
+				// 如果一个文件内都是ip,那么将ip拼接为指定个数进行查询，快
+				var allData []string
 				for _, line := range lines {
 					if utils.IsIP(line) {
-						log.Println("正在搜索ip: ", line)
 						searchData := fmt.Sprintf(`ip="%s"`, line)
-						module.RunHunter(searchData, hunterExcelFile)
-					} else {
-						log.Println("正在搜索domain: ", line)
+						allData = append(allData, searchData)
+					}
+				}
+				config := utils.GetConfig()
+				searchData := utils.SplitAndFormatSlice(allData, config.Module.Hunter.BatchSize)
+				for _, datum := range searchData {
+					log.Println("正在搜索: ", datum)
+					module.RunHunter(datum, hunterExcelFile)
+				}
+
+				for _, line := range lines {
+					if !utils.IsIP(line) {
 						searchData := fmt.Sprintf(`domain.suffix="%s"`, line)
 						module.RunHunter(searchData, hunterExcelFile)
 					}
 				}
+
 			}
 
 		} else {

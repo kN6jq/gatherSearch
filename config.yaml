@@ -11,6 +11,7 @@ module:
     key: 111111111111111111111111111
     all: true # 是否获取全部
     size: 1000 # 如果不是全部,那么最大获取多少
+    batchSize: 5 # hunter最大支持5个拼接
   shodan:
     url: https://api.shodan.io/
     key: 111111111111111111111111111
