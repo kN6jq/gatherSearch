@@ -90,7 +90,11 @@ func RunHunter(data string, filename string) {
 	// 计算总页数
 	if hunterdataTotal > 0 {
 		pageSize := 100 // 每页处理 10 条数据
-		if hunterdataTotal > 3000 {
+
+		// 获取全部还是指定数量
+		if utils.Config.Module.Hunter.All == true {
+			hunterdataTotal = hunterdataTotal
+		} else if utils.Config.Module.Hunter.All == false {
 			hunterdataTotal = utils.Config.Module.Hunter.Size
 		}
 		// 计算总页数

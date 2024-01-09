@@ -10,7 +10,9 @@
 
 ## fofa
 
-> 对查询文件中的ip搜索进行了优化(仅支持fofa),使用`||`进行连接,可在配置文件中设置连接个数,默认为10个
+
+> tips: 如果查询文件内的为ip,为了快速,通过配置文件中的batchSize设置数量为一组拼接进行查询
+
 ```bash
 gatherSearch fofa -d baidu.com # 搜索域名
 gatherSearch fofa -i 1.1.1.1 # 搜索ip
@@ -54,7 +56,7 @@ gatherSearch 0zone -d baidu.com # 搜索域名(这里咨询了客服,需要提�
 # 注意事项
 
 - 使用前请在config.yaml配置api
-- 当超过搜索引擎设置的最大结果时,使用配置文件最大搜索数量
+- fofa及hunter搜索时可设置是否获取全部或者指定的数量,请参考config.yaml
 
 
 # 免责申明

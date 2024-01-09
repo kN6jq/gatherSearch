@@ -3,12 +3,14 @@ module:
     url: https://fofa.info/api/v1/search/all
     email: xxx
     token: 111111111111111111111111111
-    size: 10000
-    batchSize: 10
+    all: true # 是否获取全部
+    size: 1000 # 如果不是全部,那么最大获取多少
+    batchSize: 10 # 一次查询多少
   hunter:
     url: https://hunter.qianxin.com/openApi/search
     key: 111111111111111111111111111
-    size: 10000
+    all: true # 是否获取全部
+    size: 1000 # 如果不是全部,那么最大获取多少
   shodan:
     url: https://api.shodan.io/
     key: 111111111111111111111111111

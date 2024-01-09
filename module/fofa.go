@@ -46,8 +46,11 @@ func FofaSearch(data string, filename string) {
 	log.Printf("共搜索到数据: %d 个", fofadataTotal)
 	if fofadataTotal > 0 {
 		pageSize := 100 // 每页处理 100 条数据
-		if fofadataTotal > 3000 {
-			fofadataTotal = utils.Config.Module.Fofa.Size
+		// 这里修改为通过开关设置获取全部还是指定数量
+		if utils.Config.Module.Fofa.All == true {
+			fofadataTotal = fofadataTotal
+		} else if utils.Config.Module.Fofa.All == false {
+			fofadataTotal = config.Module.Fofa.Size
 		}
 		// 计算总页数
 		totalPages := (fofadataTotal + pageSize - 1) / pageSize

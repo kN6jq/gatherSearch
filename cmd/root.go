@@ -83,6 +83,7 @@ var fofaCmd = &cobra.Command{
 					module.FofaSearch(line, fofaExcelFile)
 				}
 			} else {
+				// 如果一个文件内都是ip,那么将ip拼接为指定个数进行查询，快
 				var allData []string
 				for _, line := range lines {
 					if utils.IsIP(line) {

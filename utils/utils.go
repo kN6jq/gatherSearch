@@ -17,6 +17,9 @@ func Req() *req.Request {
 	return req.C().R().SetHeader("User-Agent", RandomUserAgent())
 }
 
+/*
+按照batchSize为一组进行拼接，方便快速查询
+*/
 func SplitAndFormatSlice(list []string, batchSize int) []string {
 	totalLength := len(list)
 	segments := (totalLength + batchSize - 1) / batchSize
