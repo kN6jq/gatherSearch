@@ -137,6 +137,7 @@ func searchSite(data string, filename string) {
 	config := utils.GetConfig()
 	url := config.Module.Zone.URL
 	key := config.Module.Zone.Key
+	data = fmt.Sprintf("(company==%s)||(title==%s)||(banner==%s)||(html_banner==%s)||(component==%s)||(ssl_info.detail==%s)", data, data, data, data, data, data)
 	response, err := utils.Req().SetHeader("Content-Type", "application/json").
 		SetBody(fmt.Sprintf(`{"query":"%s", "query_type":"site", "page":1, "pagesize":1, "zone_key_id": "%s"}`, data, key)).
 		SetSuccessResult(&zoneSiteResult).Post(url)
