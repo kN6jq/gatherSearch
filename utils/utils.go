@@ -131,7 +131,7 @@ func RemoveSpaces(input string) string {
 }
 
 func HunterExcelFile() string {
-	headerRow := []string{"Domain", "URL", "WebTitle", "StatusCode", "IP", "Port"}
+	headerRow := []string{"Domain", "URL", "WebTitle", "StatusCode", "IP", "Port", "Country", "Area"}
 	filename, err := CreateExcelFile("hunter", headerRow)
 	if err != nil {
 		log.Fatalln("创建文件时发生错误:", err)
@@ -139,7 +139,7 @@ func HunterExcelFile() string {
 	return filename
 }
 func FofaExcelFile() string {
-	headerRow := []string{"Domain", "Host", "Title", "Ip", "Port"}
+	headerRow := []string{"Domain", "Host", "Title", "Ip", "Port", "Country", "Area"}
 	filename, err := CreateExcelFile("fofa", headerRow)
 	if err != nil {
 		log.Fatalln("创建文件时发生错误:", err)
@@ -147,7 +147,7 @@ func FofaExcelFile() string {
 	return filename
 }
 func ShodanExcelFile() string {
-	headerRow := []string{"Domain", "Subdomain", "Ip"}
+	headerRow := []string{"Domain", "Subdomain", "Ip", "Country", "Area"}
 	filename, err := CreateExcelFile("shodan", headerRow)
 	if err != nil {
 		log.Fatalln("创建文件时发生错误:", err)

@@ -1,8 +1,8 @@
 module:
   fofa:
     url: https://fofa.info/api/v1/search/all
-    email: xxx
-    token: 111111111111111111111111111
+    email:
+    token:
     all: true # 是否获取全部
     size: 1000 # 如果不是全部,那么最大获取多少
     batchSize: 10 # 一次查询多少

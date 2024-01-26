@@ -47,11 +47,16 @@ func RunFofa(data string, filename string) {
 	if fofadataTotal > 0 {
 		pageSize := 100 // 每页处理 100 条数据
 		// 这里修改为通过开关设置获取全部还是指定数量
-		if utils.Config.Module.Fofa.All == true {
+		if utils.Config.Module.Fofa.All == true && fofadataTotal > config.Module.Fofa.Size {
 			fofadataTotal = fofadataTotal
-		} else if utils.Config.Module.Fofa.All == false {
+		} else if utils.Config.Module.Fofa.All == true && fofadataTotal < config.Module.Fofa.Size {
+			fofadataTotal = fofadataTotal
+		} else if utils.Config.Module.Fofa.All == false && fofadataTotal > config.Module.Fofa.Size {
 			fofadataTotal = config.Module.Fofa.Size
+		} else if utils.Config.Module.Fofa.All == false && fofadataTotal < config.Module.Fofa.Size {
+			fofadataTotal = fofadataTotal
 		}
+
 		// 计算总页数
 		totalPages := (fofadataTotal + pageSize - 1) / pageSize
 
@@ -81,9 +86,10 @@ func RunFofa(data string, filename string) {
 						webTitle := utils.ToString(result[2])
 						ip := utils.ToString(result[3])
 						port := utils.ToString(result[4])
-						row := []string{domain, url, webTitle, ip, port}
+						area, country, _ := utils.QueryIp(ip)
+						row := []string{domain, url, webTitle, ip, port, country, area}
 						rows = append(rows, row)
-						fmt.Printf("%-20s %-50s %-50s %-30s %-30s\n", domain, url, webTitle, ip, port)
+						fmt.Printf("%-20s %-50s %-50s %-30s %-30s %-30s %-30s\n", domain, url, webTitle, ip, port, country, area)
 					}
 				}
 				if len(rows) > 0 {

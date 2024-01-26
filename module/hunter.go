@@ -92,10 +92,14 @@ func RunHunter(data string, filename string) {
 		pageSize := 100 // 每页处理 10 条数据
 
 		// 获取全部还是指定数量
-		if utils.Config.Module.Hunter.All == true {
+		if utils.Config.Module.Hunter.All == true && hunterdataTotal > config.Module.Hunter.Size {
 			hunterdataTotal = hunterdataTotal
-		} else if utils.Config.Module.Hunter.All == false {
-			hunterdataTotal = utils.Config.Module.Hunter.Size
+		} else if utils.Config.Module.Hunter.All == true && hunterdataTotal < config.Module.Hunter.Size {
+			hunterdataTotal = hunterdataTotal
+		} else if utils.Config.Module.Hunter.All == false && hunterdataTotal > config.Module.Hunter.Size {
+			hunterdataTotal = config.Module.Hunter.Size
+		} else if utils.Config.Module.Hunter.All == false && hunterdataTotal < config.Module.Hunter.Size {
+			hunterdataTotal = hunterdataTotal
 		}
 		// 计算总页数
 		totalPages := (hunterdataTotal + pageSize - 1) / pageSize
@@ -118,8 +122,9 @@ func RunHunter(data string, filename string) {
 					statusCode := hunterDataResults.Data.Arr[i].StatusCode
 					ip := utils.ToString(hunterDataResults.Data.Arr[i].IP)
 					port := hunterDataResults.Data.Arr[i].Port
-					fmt.Printf("%-20s %-30s %-40s %-20d %-20s %-20d\n", domain, url, webTitle, statusCode, ip, port)
-					row := []string{domain, url, webTitle, strconv.Itoa(statusCode), ip, strconv.Itoa(port)}
+					area, country, _ := utils.QueryIp(ip)
+					fmt.Printf("%-20s %-30s %-40s %-20d %-20s %-20d %-30s %-40s\n", domain, url, webTitle, statusCode, ip, port, country, area)
+					row := []string{domain, url, webTitle, strconv.Itoa(statusCode), ip, strconv.Itoa(port), country, area}
 					rows = append(rows, row)
 				}
 

@@ -47,8 +47,9 @@ func RunShodan(data string, filename string) {
 				subdomain = shodanResults.Data[i].Subdomain + "." + data
 			}
 			ip := shodanResults.Data[i].Value
-			rows = append(rows, []string{data, subdomain, ip})
-			fmt.Printf("%-20s %-20s %-20s \n", data, subdomain, ip)
+			area, country, _ := utils.QueryIp(ip)
+			rows = append(rows, []string{data, subdomain, ip, area, country})
+			fmt.Printf("%-20s %-20s %-20s %-20s %-20s\n", data, subdomain, ip, area, country)
 		}
 		if len(rows) > 0 {
 			// 保存数据到 Excel 文件
