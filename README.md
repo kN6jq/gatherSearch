@@ -13,6 +13,8 @@
 
 将qqwry.dat文件放在可执行文件同目录
 
+![img.png](images/img1.png)
+
 ## fofa
 
 
