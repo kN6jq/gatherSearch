@@ -255,12 +255,23 @@ func IsIP(ip string) bool {
 func GetNowDate() string {
 	return time.Now().Format("2006-01-02")
 }
+
+// GetLastYearDate 获取上一年的日期
 func GetLastYearDate() string {
 	currentTime := time.Now()
 	lastYear := currentTime.Year() - 1
 	lastYearDate := time.Date(lastYear, currentTime.Month(), currentTime.Day(), 0, 0, 0, 0, currentTime.Location())
 	return lastYearDate.Format("2006-01-02")
 }
+
+// 获取上一个月的日期
+func GetLastMonthDate() string {
+	currentTime := time.Now()
+	lastMonth := currentTime.Month() - 1
+	lastMonthDate := time.Date(currentTime.Year(), lastMonth, currentTime.Day(), 0, 0, 0, 0, currentTime.Location())
+	return lastMonthDate.Format("2006-01-02")
+}
+
 func GetCurrentTimestamp() string {
 	timestamp := time.Now().Unix()
 	return fmt.Sprintf("%d", timestamp)

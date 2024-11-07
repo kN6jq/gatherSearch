@@ -41,8 +41,8 @@ func init() {
 var fofaCmd = &cobra.Command{
 	Use:   "fofa",
 	Short: "Use fofa module",
-	Args:  cobra.ExactArgs(1),
-	Run:   runFofa,
+	//Args:  cobra.ExactArgs(1),
+	Run: runFofa,
 }
 
 func runFofa(cmd *cobra.Command, args []string) {
@@ -88,8 +88,8 @@ func runFofaWithFile(filename string, custom bool, excelFile string) {
 var hunterCmd = &cobra.Command{
 	Use:   "hunter",
 	Short: "Use hunter module",
-	Args:  cobra.ExactArgs(1),
-	Run:   runHunter,
+	//Args:  cobra.ExactArgs(1),
+	Run: runHunter,
 }
 
 func runHunter(cmd *cobra.Command, args []string) {
@@ -135,8 +135,8 @@ func runHunterWithFile(filename string, custom bool, excelFile string) {
 var shodanCmd = &cobra.Command{
 	Use:   "shodan",
 	Short: "Use shodan module",
-	Args:  cobra.ExactArgs(1),
-	Run:   runShodan,
+	//Args:  cobra.ExactArgs(1),
+	Run: runShodan,
 }
 
 func runShodan(cmd *cobra.Command, args []string) {
@@ -157,8 +157,8 @@ func runShodan(cmd *cobra.Command, args []string) {
 var shodandbCmd = &cobra.Command{
 	Use:   "shodandb",
 	Short: "Use shodandb module",
-	Args:  cobra.ExactArgs(1),
-	Run:   runShodandb,
+	//Args:  cobra.ExactArgs(1),
+	Run: runShodandb,
 }
 
 func runShodandb(cmd *cobra.Command, args []string) {

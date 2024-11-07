@@ -60,13 +60,14 @@ func RunHunter(data string, filename string) {
 	config := utils.GetConfig()
 	hunterUrl := config.Module.Hunter.URL
 	hunterKey := config.Module.Hunter.Key
-	start_time := utils.GetLastYearDate()
+	start_time := utils.GetLastMonthDate()
 	end_time := utils.GetNowDate()
 	// 先获取一条数据，获取总数
 	hunterReq := hunterUrl + "?api-key=" + hunterKey + "&search=" + searchData + "&page=" + "1" + "&page_size=" + "1" + "&is_web=1&port_filter=true" + "&start_time=" + start_time + "&end_time=" + end_time
 	response, err := utils.Req().SetSuccessResult(&hunterTestResults).Get(hunterReq)
 	if err != nil {
 		log.Println("Hunter API request failed")
+		log.Println(err)
 		return
 	}
 	if hunterTestResults.Code == 40204 {
@@ -112,7 +113,7 @@ func RunHunter(data string, filename string) {
 			hunterResponse, err := utils.Req().SetSuccessResult(&hunterDataResults).Get(hunterDataReq)
 			if err != nil {
 				log.Println("Hunter API request failed")
-				return
+				log.Println(err)
 			}
 			if hunterResponse.IsSuccessState() {
 				for i := range hunterDataResults.Data.Arr {
