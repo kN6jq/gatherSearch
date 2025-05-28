@@ -2,11 +2,11 @@ package module
 
 import (
 	"encoding/base64"
-	"fmt"
-	"github.com/kN6jq/gatherSearch/utils"
 	"log"
 	"strconv"
 	"time"
+
+	"github.com/kN6jq/gatherSearch/utils"
 )
 
 type hunterResults struct {
@@ -60,10 +60,10 @@ func RunHunter(data string, filename string) {
 	config := utils.GetConfig()
 	hunterUrl := config.Module.Hunter.URL
 	hunterKey := config.Module.Hunter.Key
-	start_time := utils.GetLastMonthDate()
-	end_time := utils.GetNowDate()
+
 	// 先获取一条数据，获取总数
-	hunterReq := hunterUrl + "?api-key=" + hunterKey + "&search=" + searchData + "&page=" + "1" + "&page_size=" + "1" + "&is_web=1&port_filter=true" + "&start_time=" + start_time + "&end_time=" + end_time
+	hunterReq := hunterUrl + "?api-key=" + hunterKey + "&search=" + searchData + "&page=1&page_size=1"
+
 	response, err := utils.Req().SetSuccessResult(&hunterTestResults).Get(hunterReq)
 	if err != nil {
 		log.Println("Hunter API request failed")
@@ -90,26 +90,46 @@ func RunHunter(data string, filename string) {
 	log.Printf("共搜索到数据: %d 个", hunterdataTotal)
 	// 计算总页数
 	if hunterdataTotal > 0 {
-		pageSize := 100 // 每页处理 10 条数据
-
-		// 获取全部还是指定数量
-		if utils.Config.Module.Hunter.All == true && hunterdataTotal > config.Module.Hunter.Size {
-			hunterdataTotal = hunterdataTotal
-		} else if utils.Config.Module.Hunter.All == true && hunterdataTotal < config.Module.Hunter.Size {
-			hunterdataTotal = hunterdataTotal
-		} else if utils.Config.Module.Hunter.All == false && hunterdataTotal > config.Module.Hunter.Size {
-			hunterdataTotal = config.Module.Hunter.Size
-		} else if utils.Config.Module.Hunter.All == false && hunterdataTotal < config.Module.Hunter.Size {
-			hunterdataTotal = hunterdataTotal
+		// 根据配置决定获取数量
+		maxResults := hunterdataTotal
+		if !config.Module.Hunter.All {
+			// 如果不获取全部，则限制为配置的size
+			if config.Module.Hunter.Size < maxResults {
+				maxResults = config.Module.Hunter.Size
+				log.Printf("根据配置限制，将只获取 %d 条数据", maxResults)
+			}
 		}
-		// 计算总页数
-		totalPages := (hunterdataTotal + pageSize - 1) / pageSize
+
+		// 每页请求数量
+		pageSize := 100
+
+		// 计算需要请求的页数
+		totalPages := (maxResults + pageSize - 1) / pageSize
+
+		// 计算最后一页需要的数量
+		lastPageSize := maxResults % pageSize
+		if lastPageSize == 0 && maxResults > 0 {
+			lastPageSize = pageSize
+		}
+
+		// 打印表头
+		utils.PrintTableHeader()
 
 		// 使用循环逐页处理数据
+		var processedCount int = 0
 		for pageIndex := 1; pageIndex <= totalPages; pageIndex++ {
 			var rows [][]string
 			time.Sleep(time.Second * 3)
-			hunterDataReq := hunterUrl + "?api-key=" + hunterKey + "&search=" + searchData + "&page=" + strconv.Itoa(pageIndex) + "&page_size=" + strconv.Itoa(pageSize) + "&is_web=1&port_filter=true" + "&start_time=" + start_time + "&end_time=" + end_time
+
+			// 计算当前页应获取的数量
+			currentPageSize := pageSize
+			if pageIndex == totalPages && lastPageSize > 0 {
+				currentPageSize = lastPageSize
+			}
+
+			hunterDataReq := hunterUrl + "?api-key=" + hunterKey + "&search=" + searchData + "&page=" + strconv.Itoa(pageIndex) + "&page_size=" + strconv.Itoa(currentPageSize)
+			log.Printf("正在请求Hunter API第 %d 页数据", pageIndex)
+
 			hunterResponse, err := utils.Req().SetSuccessResult(&hunterDataResults).Get(hunterDataReq)
 			if err != nil {
 				log.Println("Hunter API request failed")
@@ -124,12 +144,23 @@ func RunHunter(data string, filename string) {
 					ip := utils.ToString(hunterDataResults.Data.Arr[i].IP)
 					port := hunterDataResults.Data.Arr[i].Port
 					area, country, _ := utils.QueryIp(ip)
-					fmt.Printf("%-20s %-30s %-40s %-20d %-20s %-20d %-30s %-40s\n", domain, url, webTitle, statusCode, ip, port, country, area)
-					row := []string{domain, url, webTitle, strconv.Itoa(statusCode), ip, strconv.Itoa(port), country, area}
-					rows = append(rows, row)
-				}
 
+					// 使用表格形式输出
+					utils.PrintTableRow(domain, url, webTitle, ip, strconv.Itoa(port), country, area)
+
+					// 保存到Excel的数据行，注意顺序要与表头一致
+					row := []string{domain, url, webTitle, ip, strconv.Itoa(port), strconv.Itoa(statusCode), country, area}
+					rows = append(rows, row)
+
+					processedCount++
+					if !config.Module.Hunter.All && processedCount >= config.Module.Hunter.Size {
+						// 达到限制数量，提前结束
+						log.Printf("已达到配置的最大获取数量: %d", config.Module.Hunter.Size)
+						break
+					}
+				}
 			}
+
 			if len(rows) > 0 {
 				// 保存数据到 Excel 文件
 				err := utils.WriteDataToExcel(filename, rows)
@@ -139,8 +170,15 @@ func RunHunter(data string, filename string) {
 				}
 				rows = nil
 			}
+
+			// 如果已达到限制数量，提前结束循环
+			if !config.Module.Hunter.All && processedCount >= config.Module.Hunter.Size {
+				break
+			}
 		}
 
+		// 打印表格底部分隔线
+		utils.PrintTableFooter()
 	}
 	time.Sleep(time.Second * 3) // 有没有结果都要等待 3s 而不是有结果才延时
 }

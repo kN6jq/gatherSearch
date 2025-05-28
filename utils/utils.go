@@ -3,14 +3,15 @@ package utils
 import (
 	"bufio"
 	"fmt"
-	"github.com/imroc/req/v3"
-	"github.com/tealeg/xlsx"
 	"log"
 	"math/rand"
 	"net"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/imroc/req/v3"
+	"github.com/tealeg/xlsx"
 )
 
 func Req() *req.Request {
@@ -131,7 +132,7 @@ func RemoveSpaces(input string) string {
 }
 
 func HunterExcelFile() string {
-	headerRow := []string{"Domain", "URL", "WebTitle", "StatusCode", "IP", "Port", "Country", "Area"}
+	headerRow := []string{"域名", "URL", "标题", "IP", "端口", "状态码", "国家", "地区"}
 	filename, err := CreateExcelFile("hunter", headerRow)
 	if err != nil {
 		log.Fatalln("创建文件时发生错误:", err)
@@ -139,7 +140,7 @@ func HunterExcelFile() string {
 	return filename
 }
 func FofaExcelFile() string {
-	headerRow := []string{"Domain", "Host", "Title", "Ip", "Port", "Country", "Area"}
+	headerRow := []string{"域名", "URL", "标题", "IP", "端口", "国家", "地区"}
 	filename, err := CreateExcelFile("fofa", headerRow)
 	if err != nil {
 		log.Fatalln("创建文件时发生错误:", err)
@@ -147,7 +148,7 @@ func FofaExcelFile() string {
 	return filename
 }
 func ShodanExcelFile() string {
-	headerRow := []string{"Domain", "Subdomain", "Ip", "Country", "Area"}
+	headerRow := []string{"域名", "子域名", "标题", "IP", "端口", "国家", "地区"}
 	filename, err := CreateExcelFile("shodan", headerRow)
 	if err != nil {
 		log.Fatalln("创建文件时发生错误:", err)
@@ -155,7 +156,7 @@ func ShodanExcelFile() string {
 	return filename
 }
 func ShodanPortExcelFile() string {
-	headerRow := []string{"port"}
+	headerRow := []string{"域名", "URL", "标题", "IP", "端口", "国家", "地区"}
 	filename, err := CreateExcelFile("shodandb", headerRow)
 	if err != nil {
 		log.Fatalln("创建文件时发生错误:", err)
@@ -163,7 +164,7 @@ func ShodanPortExcelFile() string {
 	return filename
 }
 func ZoneSiteExcelFile() string {
-	headerRow := []string{"Url", "title", "状态码", "IP", "端口"}
+	headerRow := []string{"域名", "URL", "标题", "IP", "端口", "状态码", "国家", "地区"}
 	filename, err := CreateExcelFile("zone", headerRow)
 	if err != nil {
 		log.Fatalln("创建文件时发生错误:", err)
@@ -172,7 +173,7 @@ func ZoneSiteExcelFile() string {
 }
 
 func ZoneDomainExcelFile() string {
-	headerRow := []string{"domain", "ip"}
+	headerRow := []string{"域名", "URL", "标题", "IP", "端口", "国家", "地区"}
 	filename, err := CreateExcelFile("domain", headerRow)
 	if err != nil {
 		log.Fatalln("创建文件时发生错误:", err)
@@ -237,13 +238,14 @@ func ToString(value interface{}) string {
 	if !ok {
 		return strings.Repeat(" ", 50)
 	}
-	return limitString(str, 50)
+	// 不再使用limitString，直接返回原始字符串
+	// 格式化由PrintTableRow处理
+	return str
 }
 
+// 保留但不再使用的函数，为了兼容性
 func limitString(str string, width int) string {
-	if len(str) > width {
-		str = str[:width] // 截断字符串，确保不超过指定的宽度
-	}
+	// 不再截断字符串，直接返回原始值
 	return str
 }
 

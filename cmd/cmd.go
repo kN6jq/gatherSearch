@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/kN6jq/gatherSearch/module"
-	"github.com/kN6jq/gatherSearch/utils"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/kN6jq/gatherSearch/module"
+	"github.com/kN6jq/gatherSearch/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -20,6 +21,10 @@ var (
 	rootCmd = &cobra.Command{
 		Use:   "gatherSearch",
 		Short: "gatherSearch is a tool to search information from various platforms",
+		// 禁用自动生成标签
+		DisableAutoGenTag: true,
+		// 不遍历子命令的标志
+		TraverseChildren: false,
 	}
 )
 
@@ -30,19 +35,93 @@ func Execute() {
 	}
 }
 
-func init() {
-	rootCmd.CompletionOptions.DisableDefaultCmd = true
-	rootCmd.PersistentFlags().StringVarP(&domain, "domain", "d", "", "Domain name")
-	rootCmd.PersistentFlags().StringVarP(&ip, "ip", "i", "", "IP address")
-	rootCmd.PersistentFlags().StringVarP(&file, "file", "f", "", "File name")
-	rootCmd.PersistentFlags().BoolVarP(&custom, "custom", "c", false, "Custom query")
-}
-
 var fofaCmd = &cobra.Command{
 	Use:   "fofa",
 	Short: "Use fofa module",
-	//Args:  cobra.ExactArgs(1),
-	Run: runFofa,
+	Run:   runFofa,
+	// 禁用使用行中的标志
+	DisableFlagsInUseLine: true,
+	// 不遍历子命令的标志
+	TraverseChildren: false,
+}
+
+var hunterCmd = &cobra.Command{
+	Use:   "hunter",
+	Short: "Use hunter module",
+	Run:   runHunter,
+	// 禁用使用行中的标志
+	DisableFlagsInUseLine: true,
+	// 不遍历子命令的标志
+	TraverseChildren: false,
+}
+
+var shodanCmd = &cobra.Command{
+	Use:   "shodan",
+	Short: "Use shodan module",
+	Run:   runShodan,
+	// 禁用使用行中的标志
+	DisableFlagsInUseLine: true,
+	// 不遍历子命令的标志
+	TraverseChildren: false,
+}
+
+var shodandbCmd = &cobra.Command{
+	Use:   "shodandb",
+	Short: "Use shodandb module",
+	Run:   runShodandb,
+	// 禁用使用行中的标志
+	DisableFlagsInUseLine: true,
+	// 不遍历子命令的标志
+	TraverseChildren: false,
+}
+
+var zoneCmd = &cobra.Command{
+	Use:   "zone",
+	Short: "Use zone module",
+	Run:   runZone,
+	// 禁用使用行中的标志
+	DisableFlagsInUseLine: true,
+	// 不遍历子命令的标志
+	TraverseChildren: false,
+}
+
+// 初始化命令和标志
+func init() {
+	// 禁用默认的补全命令
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
+
+	// 禁用全局标志显示
+	rootCmd.DisableFlagsInUseLine = true
+
+	// 设置根命令不传递标志给子命令
+	rootCmd.PersistentFlags().SetInterspersed(false)
+
+	// 配置fofa命令的标志
+	fofaCmd.Flags().StringVarP(&domain, "domain", "d", "", "Domain name")
+	fofaCmd.Flags().StringVarP(&ip, "ip", "i", "", "IP address")
+	fofaCmd.Flags().StringVarP(&file, "file", "f", "", "File name")
+	fofaCmd.Flags().BoolVarP(&custom, "custom", "c", false, "Custom query")
+
+	// 配置hunter命令的标志
+	hunterCmd.Flags().StringVarP(&domain, "domain", "d", "", "Domain name")
+	hunterCmd.Flags().StringVarP(&ip, "ip", "i", "", "IP address")
+	hunterCmd.Flags().StringVarP(&file, "file", "f", "", "File name")
+	hunterCmd.Flags().BoolVarP(&custom, "custom", "c", false, "Custom query")
+
+	// 配置shodan命令的标志
+	shodanCmd.Flags().StringVarP(&domain, "domain", "d", "", "Domain name")
+	shodanCmd.Flags().StringVarP(&file, "file", "f", "", "File name")
+
+	// 配置shodandb命令的标志
+	shodandbCmd.Flags().StringVarP(&ip, "ip", "i", "", "IP address")
+	shodandbCmd.Flags().StringVarP(&file, "file", "f", "", "File name")
+
+	// 配置zone命令的标志
+	zoneCmd.Flags().StringVarP(&name, "name", "n", "", "Enterprise name")
+	zoneCmd.Flags().StringVarP(&domain, "domain", "d", "", "Domain name")
+
+	// 添加所有子命令到根命令
+	rootCmd.AddCommand(fofaCmd, hunterCmd, shodanCmd, shodandbCmd, zoneCmd)
 }
 
 func runFofa(cmd *cobra.Command, args []string) {
@@ -85,13 +164,6 @@ func runFofaWithFile(filename string, custom bool, excelFile string) {
 	}
 }
 
-var hunterCmd = &cobra.Command{
-	Use:   "hunter",
-	Short: "Use hunter module",
-	//Args:  cobra.ExactArgs(1),
-	Run: runHunter,
-}
-
 func runHunter(cmd *cobra.Command, args []string) {
 	hunterExcelFile := utils.HunterExcelFile()
 	switch {
@@ -132,13 +204,6 @@ func runHunterWithFile(filename string, custom bool, excelFile string) {
 	}
 }
 
-var shodanCmd = &cobra.Command{
-	Use:   "shodan",
-	Short: "Use shodan module",
-	//Args:  cobra.ExactArgs(1),
-	Run: runShodan,
-}
-
 func runShodan(cmd *cobra.Command, args []string) {
 	shodanExcelFile := utils.ShodanExcelFile()
 	switch {
@@ -152,13 +217,6 @@ func runShodan(cmd *cobra.Command, args []string) {
 	default:
 		_ = cmd.Help()
 	}
-}
-
-var shodandbCmd = &cobra.Command{
-	Use:   "shodandb",
-	Short: "Use shodandb module",
-	//Args:  cobra.ExactArgs(1),
-	Run: runShodandb,
 }
 
 func runShodandb(cmd *cobra.Command, args []string) {
@@ -184,17 +242,6 @@ func runShodandb(cmd *cobra.Command, args []string) {
 	default:
 		_ = cmd.Help()
 	}
-}
-
-var zoneCmd = &cobra.Command{
-	Use:   "zone",
-	Short: "Use zone module",
-	Run:   runZone,
-}
-
-func init() {
-	zoneCmd.Flags().StringVarP(&name, "name", "n", "", "Enterprise name")
-	rootCmd.AddCommand(zoneCmd)
 }
 
 func runZone(cmd *cobra.Command, args []string) {
@@ -225,8 +272,4 @@ func runBatchSearch(data []string, batchSize int, runner func(string, string), e
 		log.Println("正在搜索: ", batch)
 		runner(batch, excelFile)
 	}
-}
-
-func init() {
-	rootCmd.AddCommand(fofaCmd, hunterCmd, shodanCmd, shodandbCmd)
 }

@@ -1,11 +1,16 @@
 package module
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/kN6jq/gatherSearch/utils"
+	"io"
 	"log"
+	"net/http"
 	"strconv"
+	"strings"
 	"time"
+
+	"github.com/kN6jq/gatherSearch/utils"
 )
 
 type Icon_md5_base64 struct {
@@ -124,6 +129,117 @@ var (
 	zoneDomainResult DomainData
 )
 
+type zoneResponse struct {
+	Code int `json:"code"`
+	Data struct {
+		Count   int `json:"count"`
+		Results []struct {
+			URL        string `json:"url"`
+			Title      string `json:"title"`
+			StatusCode string `json:"status_code"`
+			IP         string `json:"ip"`
+			Port       string `json:"port"`
+		} `json:"results"`
+	} `json:"data"`
+}
+
+func RunZone(data string, filename string) {
+	config := utils.GetConfig()
+	zoneUrl := config.Module.Zone.URL
+	zoneKey := config.Module.Zone.Key
+	zoneSize := config.Module.Zone.Size
+
+	// 构建请求URL，使用name参数
+	requestUrl := fmt.Sprintf("%sget?key=%s&name=%s&pagesize=%d", zoneUrl, zoneKey, data, zoneSize)
+
+	// 创建HTTP客户端
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+	log.Printf("正在请求Zone API: %s", requestUrl)
+
+	// 发送GET请求
+	resp, err := client.Get(requestUrl)
+	if err != nil {
+		log.Println("Error sending request to 0.zone:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// 读取响应体
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error reading response body:", err)
+		return
+	}
+
+	// 解析JSON响应
+	var response zoneResponse
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		log.Println("Error parsing JSON response:", err)
+		return
+	}
+
+	// 检查响应码
+	if response.Code != 0 {
+		log.Printf("API returned error code: %d\n", response.Code)
+		return
+	}
+
+	// 打印结果数量
+	log.Printf("共搜索到数据: %d 个", response.Data.Count)
+
+	if response.Data.Count > 0 {
+		// 打印表头
+		utils.PrintTableHeader()
+
+		var rows [][]string
+		for _, result := range response.Data.Results {
+			url := result.URL
+			title := result.Title
+			statusCode := result.StatusCode
+			ip := result.IP
+			port := result.Port
+
+			// 查询IP地理位置
+			area, country, _ := utils.QueryIp(ip)
+
+			// 使用表格输出
+			utils.PrintTableRow(extractDomain(url), url, title, ip, port, country, area)
+
+			// 保存到Excel
+			row := []string{extractDomain(url), url, title, ip, port, statusCode, country, area}
+			rows = append(rows, row)
+		}
+
+		if len(rows) > 0 {
+			err := utils.WriteDataToExcel(filename, rows)
+			if err != nil {
+				log.Println("保存文件时发生错误:", err)
+				return
+			}
+		}
+
+		// 打印表格底部分隔线
+		utils.PrintTableFooter()
+	}
+}
+
+// 从URL中提取域名
+func extractDomain(url string) string {
+	// 移除协议部分
+	url = strings.TrimPrefix(url, "http://")
+	url = strings.TrimPrefix(url, "https://")
+
+	// 获取域名部分（第一个斜杠之前）
+	parts := strings.Split(url, "/")
+	if len(parts) > 0 {
+		return parts[0]
+	}
+	return url
+}
+
 func RunZoneSite(search string, filename string) {
 	searchSite(search, filename)
 
@@ -137,108 +253,104 @@ func searchSite(data string, filename string) {
 	config := utils.GetConfig()
 	url := config.Module.Zone.URL
 	key := config.Module.Zone.Key
-	data = fmt.Sprintf("(company==%s)||(title==%s)||(banner==%s)||(html_banner==%s)||(component==%s)||(ssl_info.detail==%s)", data, data, data, data, data, data)
-	response, err := utils.Req().SetHeader("Content-Type", "application/json").
-		SetBody(fmt.Sprintf(`{"query":"%s", "query_type":"site", "page":1, "pagesize":1, "zone_key_id": "%s"}`, data, key)).
-		SetSuccessResult(&zoneSiteResult).Post(url)
+	size := config.Module.Zone.Size
+
+	// 构建正确的API请求，使用name参数
+	zoneReq := url + "site?key=" + key + "&name=" + data + "&pagesize=" + strconv.Itoa(size)
+
+	response, err := utils.Req().SetSuccessResult(&zoneSiteResult).Get(zoneReq)
 	if err != nil {
 		log.Println("0.zone request error:", err)
+		return
 	}
-	var Total = 0
 	if response.IsSuccessState() {
-		Total, _ = strconv.Atoi(zoneSiteResult.Total)
-	} else {
-		log.Println("暂未发现信息系统")
-	}
-	time.Sleep(time.Second * 2)
-	if Total > 0 {
-		if Total > 10000 {
-			Total = utils.Config.Module.Zone.Size
-		}
-		pageSize := 40 // 每页处理 40 条数据
-		totalPages := (Total + pageSize - 1) / pageSize
-		for pageIndex := 1; pageIndex <= totalPages; pageIndex++ {
+		zoneSiteTotal, _ := strconv.Atoi(zoneSiteResult.Total)
+		log.Printf("共搜索到数据: %d 个", zoneSiteTotal)
+		if zoneSiteTotal > 0 {
+			// 打印表头
+			utils.PrintTableHeader()
+
 			var rows [][]string
-			response, err := utils.Req().SetHeader("Content-Type", "application/json").
-				SetBody(fmt.Sprintf(`{"query":"%s", "query_type":"site", "page":%d, "pagesize":%d, "zone_key_id":"%s"}`, data, pageIndex, pageSize, key)).
-				SetSuccessResult(&zoneSiteResult).Post(url)
-			if err != nil {
-				log.Println("0.zone request error:", err)
+			for i := range zoneSiteResult.Data {
+				url := zoneSiteResult.Data[i].Url
+				title := zoneSiteResult.Data[i].Title
+				statusCode := zoneSiteResult.Data[i].Status_code
+				ip := zoneSiteResult.Data[i].Ip
+				port := zoneSiteResult.Data[i].Port
+				area, country, _ := utils.QueryIp(ip)
+
+				// 使用表格输出
+				domain := extractDomain(url)
+				utils.PrintTableRow(domain, url, title, ip, port, country, area)
+
+				row := []string{domain, url, title, ip, port, statusCode, country, area}
+				rows = append(rows, row)
 			}
-			if response.IsSuccessState() {
-				for _, v := range zoneSiteResult.Data {
-					url := v.Url
-					title := utils.RemoveSpaces(v.Title)
-					status_code := v.Status_code
-					ip := v.Ip
-					port := v.Port
-					rows = append(rows, []string{url, title, status_code, ip, port})
-					fmt.Printf("%-20s %-30s %-20s %-20s %-20s\n", v.Url, utils.RemoveSpaces(v.Title), v.Status_code, v.Ip, v.Port)
-				}
-			}
+
 			if len(rows) > 0 {
 				err := utils.WriteDataToExcel(filename, rows)
 				if err != nil {
-					log.Println("写入excel失败:", err)
+					log.Println("保存文件时发生错误:", err)
+					return
 				}
-				rows = nil
 			}
-			time.Sleep(time.Second * 2)
+
+			// 打印表格底部分隔线
+			utils.PrintTableFooter()
 		}
+	} else {
+		log.Println("0.zone request error:", err)
 	}
-	time.Sleep(time.Second * 2)
 }
 
 func searchDomain(data string, filename string) {
 	config := utils.GetConfig()
 	url := config.Module.Zone.URL
 	key := config.Module.Zone.Key
-	response, err := utils.Req().SetHeader("Content-Type", "application/json").
-		SetBody(fmt.Sprintf(`{"query":"%s", "query_type":"domain", "page":1, "pagesize":1, "zone_key_id": "%s"}`, data, key)).
-		SetSuccessResult(&zoneDomainResult).Post(url)
+	size := config.Module.Zone.Size
+
+	// 构建正确的API请求，使用domain参数
+	zoneReq := url + "domain?key=" + key + "&domain=" + data + "&pagesize=" + strconv.Itoa(size)
+	log.Printf("正在请求Zone API: %s", zoneReq)
+
+	response, err := utils.Req().SetSuccessResult(&zoneDomainResult).Get(zoneReq)
 	if err != nil {
 		log.Println("0.zone request error:", err)
+		return
 	}
-	var Total = 0
 	if response.IsSuccessState() {
-		Total, _ = strconv.Atoi(zoneDomainResult.Total)
-	} else {
-		log.Println("暂未发现信息系统")
-	}
-	time.Sleep(time.Second * 2)
-	if Total > 0 {
-		if Total > 10000 {
-			Total = config.Module.Zone.Size
-		}
-		pageSize := 40 // 每页处理 40 条数据
-		totalPages := (Total + pageSize - 1) / pageSize
+		zoneDomainTotal, _ := strconv.Atoi(zoneDomainResult.Total)
+		log.Printf("共搜索到数据: %d 个", zoneDomainTotal)
+		if zoneDomainTotal > 0 {
+			// 打印表头
+			utils.PrintTableHeader()
 
-		for pageIndex := 1; pageIndex <= totalPages; pageIndex++ {
 			var rows [][]string
-			response, err := utils.Req().SetHeader("Content-Type", "application/json").
-				SetBody(fmt.Sprintf(`{"query":"%s", "query_type":"domain", "page":%d, "pagesize":%d, "zone_key_id":"%s"}`, data, pageIndex, pageSize, key)).
-				SetSuccessResult(&zoneDomainResult).Post(url)
-			if err != nil {
-				log.Println("0.zone request error:", err)
+			for i := range zoneDomainResult.Data {
+				domain := zoneDomainResult.Data[i].Domain
+				url := zoneDomainResult.Data[i].Url
+				ip := zoneDomainResult.Data[i].Msg.Ip
+				area, country, _ := utils.QueryIp(ip)
+
+				// 使用表格输出
+				utils.PrintTableRow(domain, url, "", ip, "", country, area)
+
+				row := []string{domain, url, "", ip, "", country, area}
+				rows = append(rows, row)
 			}
-			if response.IsSuccessState() {
-				for _, v := range zoneDomainResult.Data {
-					url := v.Url
-					ip := v.Msg.Ip
-					rows = append(rows, []string{url, ip})
-					fmt.Printf("%-20s %-30s\n", url, ip)
-				}
-			}
+
 			if len(rows) > 0 {
 				err := utils.WriteDataToExcel(filename, rows)
 				if err != nil {
-					log.Println("写入excel失败:", err)
+					log.Println("保存文件时发生错误:", err)
+					return
 				}
-				rows = nil
 			}
-			time.Sleep(time.Second * 2)
-		}
-	}
 
-	time.Sleep(time.Second * 2)
+			// 打印表格底部分隔线
+			utils.PrintTableFooter()
+		}
+	} else {
+		log.Println("0.zone request error:", err)
+	}
 }
